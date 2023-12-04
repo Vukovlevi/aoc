@@ -30,7 +30,7 @@ func parseTopLeft(i int, s string, lineSize int) string {
 
 func parseTopRight(i int, s string, lineSize int) string {
 	index := i - lineSize + 1
-	if !unicode.IsDigit(rune(s[index])) || unicode.IsDigit(rune(s[index - 2])) {
+	if !unicode.IsDigit(rune(s[index])) || (unicode.IsDigit(rune(s[index - 2])) && unicode.IsDigit(rune(s[index - 1]))) {
 		return ""
 	}
 
@@ -103,7 +103,7 @@ func parseBottomLeft(i int, s string, lineSize int) string {
 
 func parseBottomRight(i int, s string, lineSize int, fullSize int) string {
 	index := i + lineSize + 1
-	if !unicode.IsDigit(rune(s[index])) || unicode.IsDigit(rune(s[index - 2])) {
+	if !unicode.IsDigit(rune(s[index])) || (unicode.IsDigit(rune(s[index - 2])) && unicode.IsDigit(rune(s[index - 1]))) {
 		return ""
 	}
 
