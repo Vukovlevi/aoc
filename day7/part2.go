@@ -9,7 +9,7 @@ import (
 )
 
 func sortType(array []string) {
-	points := map[string]int{"A": 4, "K": 3, "Q": 2, "J": 1, "T": 0}
+	points := map[string]int{"A": 4, "K": 3, "Q": 2, "T": 1, "J": 0}
 
 	for i := 0; i < len(array) - 1; i++ {
 		for j := 0; j < len(array) - 1 - i; j++ {
@@ -30,6 +30,12 @@ func sortType(array []string) {
 					array[j] = array[j + 1]
 					array[j + 1] = s
 				}
+			} else if string(array[j][k]) == "J" {
+				s := array[j]
+				array[j] = array[j + 1]
+				array[j + 1] = s
+			} else if string(array[j + 1][k]) == "J" {
+				continue
 			} else if unicode.IsDigit(rune(array[j][k])) && !unicode.IsDigit(rune(array[j + 1][k])) {
 				s := array[j]
 				array[j] = array[j + 1]
@@ -81,6 +87,24 @@ func main() {
 			} else {
 				amount[char]++
 			}
+		}
+
+		if amount['J'] != 0 && amount['J'] != 5 {
+			max := 0
+			var maxKey rune
+			for k := range amount {
+				if k == 'J' {
+					continue
+				}
+				if amount[k] > max {
+					maxKey = k
+					max = amount[k]
+				}
+			}
+
+			amount[maxKey] += amount['J']
+
+			delete(amount, 'J')
 		}
 
 		switch len(amount) {
