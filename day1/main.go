@@ -3,105 +3,58 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
 
-func min(array []int) int {
-	minimum := array[0]
-	for i := 1; i < len(array); i++ {
-		if minimum > array[i] {
-			minimum = array[i]
-		}
-	}
-
-	return minimum
-}
-
-func max(array []int) int {
-	maximum := array[0]
-	for i := 1; i < len(array); i++ {
-		if maximum < array[i] {
-			maximum = array[i]
-		}
-	}
-
-	return maximum
-}
-
-func getNumberFromString(s string) int {
-	switch (s) {
-	case "one":
-		return 1
-	case "two":
-		return 2
-	case "three":
-		return 3
-	case "four":
-		return 4
-	case "five":
-		return 5
-	case "six":
-		return 6
-	case "seven":
-		return 7
-	case "eight":
-		return 8
-	case "nine":
-		return 9
-	default:
-		return -1
-	}
-}
-
 func main() {
-	data, err := os.ReadFile("input.txt")
-	if err != nil {
-		fmt.Printf("Error reading input, %s", err.Error())
-		return
-	}
+    data, _ := os.ReadFile("input.txt")
+    str := string(data)
 
-	str := string(data)
-	lines := strings.Split(str, "\n")
+    lines := strings.Split(str, "\n")
+    left := make([]int, len(lines))
+    right := make([]int, len(lines))
 
-	digits := []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
+    for i, id := range lines[:len(lines) - 1] {
+        parts := strings.Split(id, "   ")
+        num1, _ := strconv.Atoi(parts[0])
+        left[i] = num1
+        num2, _ := strconv.Atoi(parts[1])
+        right[i] = num2
+    }
 
-	sum := 0
-	for _, line := range lines {
-		numbers := make(map[int]int)
-		var indexes []int
-		for _, strDigit := range digits {
-			index := strings.Index(line, strDigit)
-			if index != -1 {
-				numbers[index] = getNumberFromString(strDigit)
-				indexes = append(indexes, index)
-			}
+    slices.Sort(left)
+    slices.Sort(right)
 
-			index = strings.LastIndex(line, strDigit)
-			if index != -1 {
-				numbers[index] = getNumberFromString(strDigit)
-				indexes = append(indexes, index)
-			}
-		}
-		for i := 0; i < len(line); i++ {
-			if digit, err := strconv.Atoi(string(line[i])); err == nil {
-				numbers[i] = digit
-				indexes = append(indexes, i)
-			}
-		}
+    difSum := 0
+    for i, _ := range left {
+        dif := right[i] - left[i]
+        if dif < 0 {
+            dif *= -1
+        }
+        difSum += dif
+    }
 
-		minimum := min(indexes)
-		maximum := max(indexes)
+    fmt.Printf("the dif is: %d\n", difSum)
 
-		str := strconv.Itoa(numbers[minimum]) + strconv.Itoa(numbers[maximum])
-		number, err := strconv.Atoi(str)
-		if err != nil {
-			fmt.Printf("Error converting int to string: %s", err.Error())
-			return
-		}
+    //part 2
+    appears := make(map[int]int)
 
-		sum += number
-	}
+    for _, num := range right {
+        if _, ok := appears[num]; !ok {
+            appears[num] = 1
+            continue
+        }
+        appears[num]++
+    }
 
-	fmt.Printf("The sum is: %d", sum)
+    sum := 0
+    for _, num := range left {
+        if multiplier, ok := appears[num]; ok {
+            sum += (num * multiplier)
+        }
+    }
+
+    fmt.Printf("the sum is: %d", sum)
 }
