@@ -2,83 +2,75 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	data, err := os.ReadFile("input.txt")
-	if err != nil {
-		fmt.Printf("Error reading input file: %s", err.Error())
-	}
+    data, _ := os.ReadFile("input.txt")
+    str := string(data)
 
-	str := string(data)
-	lines := strings.Split(str, "\r\n")
+    lines := strings.Split(str, "\n")
+    safeReports := 0
 
-	sum := 0
-	minSum := 0
+    for _, line := range lines[:len(lines) - 1] {
+        report := make([]int, 0)
+        parts := strings.Split(line, " ")
 
-	for _, line := range lines {
-		gameData := strings.Split(line, ":")
-		id, err := strconv.Atoi(strings.Split(gameData[0], " ")[1])
-		if err != nil {
-			fmt.Printf("Error converting id: %s", err.Error())
-			return
-		}
+        for _, part := range parts {
+            num, _ := strconv.Atoi(part)
+            report = append(report, num)
+        }
 
-		reveals := strings.Split(strings.TrimPrefix(gameData[1], " "), ";")
-		skip := false
-		maxGreen := 0
-		maxRed := 0
-		maxBlue := 0
-		for _, reveal := range reveals {
-			oneBalls := strings.Split(reveal, ",")
-			for _, oneBall := range oneBalls {
-				stat := strings.Split(strings.TrimPrefix(oneBall, " "), " ")
-				number, err := strconv.Atoi(stat[0])
-				if err != nil {
-					fmt.Printf("Error converting ball number: %s", err.Error())
-					return
-				}
-				color := stat[1]
+        if isSafe(report) {
+            safeReports++
+            continue
+        }
 
-				switch (color) {
-					case "red":
-						if number > maxRed {
-							maxRed = number
-						}
-						if number > 12 {
-							skip = true
-						}
-						break
-					case "green": 
-						if number > maxGreen {
-							maxGreen = number
-						}
-						if number > 13 {
-							skip = true
-						}
-						break
-					case "blue":
-						if number > maxBlue {
-							maxBlue = number
-						}
-						if number > 14 {
-							skip = true
-						}
-						break
-				}
-			}
-		}
+        safe := false
 
-		if !skip {
-			sum += id
-		}
+        for i, _ := range report {
+            sliced := make([]int, 0)
+            sliced = append(sliced, report[:i]...)
+            sliced = append(sliced, report[i+1:]...)
+            if isSafe(sliced) {
+                safe = true
+                break
+            }
+        }
 
-		minSum += maxRed * maxGreen * maxBlue
-	}
+        if safe {
+            safeReports++
+        }
+    }
 
-	fmt.Printf("The sum of the ids of possible games: %d\n", sum)
-	fmt.Printf("The sum of the minimum balls required to play all rounds: %d", minSum)
+    fmt.Printf("number of safe reports: %d\n", safeReports)
+}
+
+func isSafe(report []int) bool {
+    increasing := true
+
+    for i := 0; i < len(report) - 1; i++ {
+        dif := report[i] - report[i + 1]
+
+        if dif == 0 || math.Abs(float64(dif)) > 3 {
+            return false
+        }
+
+        if i == 0 {
+            if dif < 0 {
+                increasing = false
+            }
+        } else {
+            if increasing && dif < 0 {
+                return false
+            } else if !increasing && dif > 0 {
+                return false
+            }
+        }
+    }
+
+    return true
 }
